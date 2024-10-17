@@ -3,9 +3,11 @@
 ## Project Overview
 Proyek ini bertujuan untuk mengembangkan sistem rekomendasi film menggunakan metode Content-Based Filtering. Dengan banyaknya pilihan film yang tersedia, pengguna sering kesulitan dalam menemukan film yang sesuai dengan selera mereka. Oleh karena itu, sistem ini dirancang untuk membantu pengguna mendapatkan rekomendasi film berdasarkan genre yang mereka sukai. Sistem rekomendasi film yang efektif penting untuk meningkatkan pengalaman pengguna dan memaksimalkan kepuasan penonton. Menurut Ricci et al. (2015), sistem rekomendasi yang baik dapat meningkatkan retensi pengguna dan meningkatkan interaksi dengan konten yang relevan. Dengan mengimplementasikan sistem ini, diharapkan pengguna dapat dengan mudah menemukan film baru yang sesuai dengan preferensi mereka, sehingga memperkaya pengalaman menonton mereka.
 #### Referensi
-1. Ricci, F., Rokach, L., & Shapira, B. (2015). *Recommender Systems Handbook*. Springer. [Link](https://link.springer.com/book/10.1007/978-1-4899-7637-6)
-2. Herlocker, J. L., Konstan, J. A., & Riedl, J. (2004). *Evaluating Collaborative Filtering Recommender Systems*. ACM Transactions on Information Systems, 22(1), 5-53. [Link](https://dl.acm.org/doi/10.1145/963770.963772)
-3. Adomavicius, G., & Tuzhilin, A. (2005). *Toward the Next Generation of Recommender Systems: A Survey of the State-of-the-Art and Possible Extensions*. IEEE Transactions on Knowledge and Data Engineering, 17(6), 734-749. [Link](https://ieeexplore.ieee.org/document/1430350)
+1. Zeshan Fayyaz, Mahsa Ebrahimian, Dina Nawara, Ahmed Ibrahim, Rasha Kashef (2020). Recommendation Systems: Algorithms, Challenges, Metrics, and Business Opportunities. *Applied Sciences*, 10(21), 7748. This paper provides an overview of recommendation systems, discussing various types, challenges, and performance metrics used in the field. [Read the paper here](https://doi.org/10.3390/app10217748).
+
+2. Yang Zhao, Xiao Xu, Jilin Chen (2020). Recent Developments in Recommender Systems: A Survey. *arXiv preprint arXiv:2306.12680*. This survey covers the evolution of recommender systems, including collaborative filtering techniques and the impact of deep learning approaches on their performance. [Access the survey here](https://ar5iv.org/html/2306.12680).
+
+3. Adomavicius, G., & Tuzhilin, A. (2005). Toward the Next Generation of Recommender Systems: A Survey of the State-of-the-Art and Possible Extensions. *IEEE Transactions on Knowledge and Data Engineering*, 17(6), 734-749. This foundational paper reviews various methodologies used in recommender systems and discusses their applications and limitations. [Find it here](https://ieeexplore.ieee.org/document/1430350).
 
 ## Business Understanding
 ### Pernyataan Masalah
@@ -23,6 +25,14 @@ Untuk mencapai tujuan tersebut, pendekatan solusi yang akan diterapkan adalah:
 **Content-Based Filtering**:
    - Metode ini akan menganalisis konten film, khususnya genre, dan merekomendasikan film berdasarkan kesamaan genre dengan film yang telah ditonton pengguna sebelumnya. 
    - Pengguna akan mendapatkan rekomendasi film yang lebih relevan berdasarkan preferensi genre yang mereka sukai.
+
+### Solution Statement
+Untuk meraih tujuan di atas, sistem rekomendasi akan:
+- Mengumpulkan data historis dari film yang ditonton pengguna untuk memahami pola preferensi mereka.
+- Mengimplementasikan algoritma Content-Based Filtering yang dapat menganalisis dan mengkategorikan film berdasarkan genre dan elemen konten lainnya.
+- Menggunakan teknik pembelajaran mesin untuk meningkatkan akurasi rekomendasi seiring dengan bertambahnya data pengguna dan interaksi dengan sistem.
+- Menyediakan antarmuka pengguna yang intuitif untuk memungkinkan pengguna menavigasi rekomendasi dengan mudah dan memberikan umpan balik yang dapat digunakan untuk meningkatkan kualitas rekomendasi lebih lanjut.
+
 
 ## Data Understanding
 
@@ -62,6 +72,36 @@ Untuk memahami distribusi genre film dalam dataset, dilakukan analisis visual:
 Untuk memahami distribusi ratings film dalam dataset, dilakukan analisis visual:
 ![download (1)](https://github.com/user-attachments/assets/3cf67c98-39ad-4b95-9161-9e33b4dd952b)
 
+### Analisis Data Eksploratif (EDA)
+Beberapa analisis yang dilakukan pada data:
+- **Distribusi Rating Pengguna**: Bagaimana pengguna memberikan rating.
+- **Film Teratas Berdasarkan Rating**: Film dengan rata-rata rating tertinggi.
+
+Rata-rata rating per film:
+```python
+# Rata-rata rating per film
+avg_rating = all_movie.groupby('title')['rating'].mean().sort_values(ascending=False).head(10)
+
+# Visualisasi film dengan rata-rata rating tertinggi
+plt.figure(figsize=(10, 6))
+sns.barplot(x=avg_rating.values, y=avg_rating.index, palette='magma')
+plt.title('Film Teratas Berdasarkan Rata-rata Rating')
+plt.show()
+```
+![download (2)](https://github.com/user-attachments/assets/4d214d17-4698-413f-be45-33e74ad38afa)
+
+Film yang paling banyak dirating:
+```python
+# Film dengan jumlah rating terbanyak
+most_rated = all_movie['title'].value_counts().head(10)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=most_rated.values, y=most_rated.index, palette='coolwarm')
+plt.title('Film Paling Banyak Dirating')
+plt.show()
+```
+![download (3)](https://github.com/user-attachments/assets/12e5eda4-028e-4ef7-bd04-f8a5bb0f7718)
+
 ### Insight
 Dari visualisasi distribusi genre, kita dapat mengidentifikasi genre yang paling banyak tersedia dalam dataset, yang dapat membantu dalam memberikan rekomendasi film yang relevan berdasarkan preferensi pengguna. Misalnya, jika pengguna lebih menyukai genre 'Action', sistem dapat merekomendasikan lebih banyak film dari genre tersebut.
 
@@ -72,7 +112,7 @@ Dari visualisasi distribusi genre, kita dapat mengidentifikasi genre yang paling
 Dalam proyek ini, beberapa teknik data preparation yang diterapkan meliputi:
 1. Menggabungkan dataset **movies.csv** dan **ratings.csv** berdasarkan **movieId**.
 2. Menghapus duplikat dan menangani nilai yang hilang (missing values).
-3. Memfokuskan pada fitur genre untuk model rekomendasi.
+3. Menggunakan teknik ekstraksi fitur dengan **TF-IDF** untuk fitur genre, yang merupakan langkah penting dalam membangun model rekomendasi.
 
 ### Proses Data Preparation
 #### 1. Menggabungkan Dataset
@@ -92,50 +132,22 @@ all_movie = all_movie.drop_duplicates('movieId')
 all_movie = all_movie.dropna()
 ```
 
-#### 3. Fokus pada Fitur Genre
-Setelah data bersih, kami memfokuskan perhatian pada fitur genre. Fitur ini adalah kunci untuk membangun sistem rekomendasi berbasis konten, karena film akan direkomendasikan berdasarkan kesamaan genre.
+#### 3. Ekstraksi Fitur dengan TF-IDF
+Setelah data bersih, kami menerapkan teknik ekstraksi fitur **TF-IDF** pada kolom genre. Langkah ini sangat penting untuk mengubah data genre menjadi representasi numerik yang dapat digunakan oleh model rekomendasi berbasis konten.
+
+```python
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Membuat model TF-IDF
+tfidf = TfidfVectorizer()
+tfidf_matrix = tfidf.fit_transform(all_movie['genres'])
+```
 
 ### Alasan Data Preparation Diperlukan
 Tahapan data preparation sangat penting dalam proses pengembangan sistem rekomendasi karena:
 - **Kualitas Data**: Menghilangkan duplikasi dan menangani missing values membantu menjaga kualitas data, yang pada gilirannya akan meningkatkan akurasi model.
 - **Keterhubungan Data**: Dengan menggabungkan dataset, kami dapat menganalisis rating bersama dengan informasi film, yang sangat penting untuk rekomendasi yang relevan.
-- **Fokus pada Fitur**: Menyaring fitur yang relevan memungkinkan model untuk lebih baik dalam mengenali pola dan membuat rekomendasi yang tepat sesuai dengan preferensi pengguna.
-
-
-
-## Analisis Data Eksploratif (EDA)
-Beberapa analisis yang dilakukan pada data:
-- **Distribusi Rating Pengguna**: Bagaimana pengguna memberikan rating.
-- **Film Teratas Berdasarkan Rating**: Film dengan rata-rata rating tertinggi.
-
-Rata-rata rating per film:
-```python
-# Rata-rata rating per film
-avg_rating = all_movie.groupby('title')['rating'].mean().sort_values(ascending=False).head(10)
-
-# Visualisasi film dengan rata-rata rating tertinggi
-plt.figure(figsize=(10, 6))
-sns.barplot(x=avg_rating.values, y=avg_rating.index, palette='magma')
-plt.title('Film Teratas Berdasarkan Rata-rata Rating')
-plt.show()
-```
-![download (2)](https://github.com/user-attachments/assets/4d214d17-4698-413f-be45-33e74ad38afa)
-
-
-
-
-Film yang paling banyak dirating:
-```python
-# Film dengan jumlah rating terbanyak
-most_rated = all_movie['title'].value_counts().head(10)
-
-plt.figure(figsize=(10, 6))
-sns.barplot(x=most_rated.values, y=most_rated.index, palette='coolwarm')
-plt.title('Film Paling Banyak Dirating')
-plt.show()
-```
-![download (3)](https://github.com/user-attachments/assets/12e5eda4-028e-4ef7-bd04-f8a5bb0f7718)
-
+- **Representasi Fitur**: Menggunakan TF-IDF memungkinkan model untuk mengenali pentingnya genre dalam konteks film, meningkatkan kemampuan model dalam memberikan rekomendasi yang sesuai.
 
 
 ## Modeling and Result
